@@ -1,9 +1,9 @@
 rm(list = ls())
 gc()
 
-# library(tidyverse)
+library(tidyverse)
 library(arrow)
-library(data.table)
+# library(data.table)
 
 # courts <- read_csv("data/courts-2024-03-11.csv") |>
 #   filter(jurisdiction == "S", in_use, has_opinion_scraper, str_detect(full_name, "Supreme")) |>
@@ -32,11 +32,19 @@ library(data.table)
 #   rename(date_modified_opinion = date_modified) |>
 #   write_dataset("data/merged/", format = "parquet")
 
-# f <- function(x, pos) select(x, id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str)
-# read_csv_chunked("data/opinions-2024-03-11.csv",
-#                  DataFrameCallback$new(f),
-#                  chunk_size = 1000) |> 
-#   write_csv("data/opinions-2024-03-11-filtered.csv")
+f <- function(x, pos) write_csv(x, str_c("data/opinion_chunk_", pos, ".csv"))
+
+read_csv_chunked("data/opinions-2024-03-11.csv",
+                 SideEffectChunkCallback$new(f),
+                 col_types = cols_only(
+                   "id" = "i",
+                   "date_modified" = "T",
+                   "type" = "c",
+                   "plain_text" = "c",
+                   "author_id" = "i",
+                   "cluster_id" = "i"
+                 ),
+                 chunk_size = 1000000)
 
 # read_csv_arrow("data/opinions-2024-03-11.csv", 
 #                read_options = list(block_size = 41943040L),
@@ -67,10 +75,10 @@ library(data.table)
 # 
 # write_parquet(dockets, "data/dockets.parquet")
 
-message("Loading Clusters")
-
-clusters <- read_parquet("data/opinion-clusters.parquet")
-setDT(clusters)
+# message("Loading Clusters")
+# 
+# clusters <- read_parquet("data/opinion-clusters.parquet")
+# setDT(clusters)
 
 # clusters <- fread("data/opinion-clusters-2024-03-11.csv",
 #   index = c("id", "docket_id"),
@@ -88,29 +96,30 @@ setDT(clusters)
 # 
 # write_parquet(clusters, "data/opinion-clusters.parquet")
 
-message("Loading Opinions")
-
-files <- list.files(path = "data", pattern = stringr::fixed("opinions_"), full.names = TRUE)
-
-message(sprintf("Number of Opinion Files: %s", length(files)))
-
-f <- function(p){
-  message(p)
-  
-  fread(p,
-        index = "cluster_id",
-        # showProgress = TRUE,
-        select = c(
-          "id", "date_modified", "type", "plain_text", "author_id",
-          "cluster_id", "page_count", "author_str"
-        )
-  )[
-    clusters,
-    on = c(cluster_id = "id"), nomatch = NULL
-  ]
-}
-
-dts <- lapply(files, f) |> rbindlist()
+# message("Loading Opinions")
+# 
+# files <- list.files(path = "data", pattern = stringr::fixed("opinions_"), full.names = TRUE)
+# 
+# message(sprintf("Number of Opinion Files: %s", length(files)))
+# 
+# f <- function(p){
+#   message(p)
+#   
+#   fread(file = p,
+#         sep = ",",
+#         index = "cluster_id",
+#         # showProgress = TRUE,
+#         select = c(
+#           "id", "date_modified", "type", "plain_text", "author_id",
+#           "cluster_id", "page_count", "author_str"
+#         )
+#   )[
+#     clusters,
+#     on = c(cluster_id = "id"), nomatch = NULL
+#   ]
+# }
+# 
+# dts <- lapply(files, f) |> rbindlist()
 
 # opinions <- fread("data/opinions-2024-03-11.csv",
 #   index = "cluster_id",
@@ -124,6 +133,6 @@ dts <- lapply(files, f) |> rbindlist()
 #   on = c(cluster_id = "id"), nomatch = NULL
 # ]
  
-message("Writing Opinions")
-
-write_parquet(dts, "data/merged.parquet")
+# message("Writing Opinions")
+# 
+# write_parquet(dts, "data/merged.parquet")
