@@ -38,7 +38,7 @@ courts <- fread("data/courts-2024-03-11.csv")[
     in_use == "t" &
     has_opinion_scraper == "t" &
     str_detect(full_name, "Supreme"),
-  .(id)
+  id
 ]
 
 message("Loading Dockets")
@@ -51,8 +51,7 @@ dockets <- fread("data/dockets-2024-03-11.csv",
     "court_id", "assigned_to_id", "cause", "jurisdiction_type"
   )
 )[
-  courts,
-  on = .(court_id = "id"), nomatch = NULL
+  court_id %in% courts
 ]
 
 message("Loading Clusters")
@@ -68,7 +67,7 @@ clusters <- fread("data/opinion-clusters-2024-03-11.csv",
   )
 )[
   dockets,
-  on = .(docket_id = "id"), nomatch = NULL
+  on = c(docket_id = "id"), nomatch = NULL
 ]
 
 message("Loading Opinions")
@@ -82,7 +81,7 @@ opinions <- fread("data/opinions-2024-03-11.csv",
   )
 )[
   clusters,
-  on = .(cluster_id = "id"), nomatch = NULL
+  on = c(cluster_id = "id"), nomatch = NULL
 ]
 
 message("Writing Opinions")
