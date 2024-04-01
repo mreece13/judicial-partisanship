@@ -1,7 +1,7 @@
 rm(list = ls())
 gc()
 
-library(tidyverse)
+# library(tidyverse)
 library(arrow)
 library(data.table)
 
@@ -90,11 +90,13 @@ write_parquet(clusters, "data/opinion-clusters.parquet")
 
 message("Loading Opinions")
 
-files <- list.files(path = "data/", pattern = "opinions_*", full.names = TRUE)
+files <- list.files(path = "data/", pattern = "opinions\\_*", full.names = TRUE)
 
 message(sprintf("Number of Opinion Files: %s", length(files)))
 
 f <- function(p){
+  message(p)
+  
   fread(p,
         index = "cluster_id",
         # showProgress = TRUE,
