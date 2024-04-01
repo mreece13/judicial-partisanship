@@ -90,7 +90,7 @@ setDT(clusters)
 
 message("Loading Opinions")
 
-files <- list.files(path = "data/", pattern = "opinions\\_*", full.names = TRUE)
+files <- list.files(path = "data", pattern = "opinions\_*", full.names = TRUE)
 
 message(sprintf("Number of Opinion Files: %s", length(files)))
 
