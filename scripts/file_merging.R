@@ -19,7 +19,8 @@ clusters <- open_csv_dataset("data/opinion-clusters-2024-03-11.csv") |>
   inner_join(dockets, by = c("docket_id" = "id")) |> 
   rename(date_modified_clusters = date_modified)
 
-open_csv_dataset("data/opinions-2024-03-11.csv") |> 
+open_csv_dataset("data/opinions-2024-03-11.csv",
+                 convert_options = csv_convert_options(newlines_in_values = TRUE)) |> 
   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
   inner_join(clusters, by = c("cluster_id" = "id")) |> 
   rename(date_modified_opinion = date_modified) |> 
