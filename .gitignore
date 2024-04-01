@@ -6,4 +6,5 @@
 *.Rproj
 /data/
 /writing/
-
+*.sh
+*.log*

@@ -4,7 +4,7 @@ gc()
 library(tidyverse)
 library(arrow)
 
-courts <- read_csv("data/courts-2024-03-11.csv.bz2") |> 
+courts <- read_csv("data/courts-2024-03-11.csv") |> 
   filter(jurisdiction == "S", in_use, has_opinion_scraper, str_detect(full_name, "Supreme")) |> 
   select(id)
 
