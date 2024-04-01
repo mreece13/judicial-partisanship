@@ -3,7 +3,7 @@ gc()
 
 library(tidyverse)
 library(arrow)
-library(data.table)
+# library(data.table)
 
 # courts <- read_csv("data/courts-2024-03-11.csv") |>
 #   filter(jurisdiction == "S", in_use, has_opinion_scraper, str_detect(full_name, "Supreme")) |>
@@ -32,11 +32,17 @@ library(data.table)
 #   rename(date_modified_opinion = date_modified) |>
 #   write_dataset("data/merged/", format = "parquet")
 
-read_csv_arrow("data/opinions-2024-03-11.csv", 
-               read_options = list(block_size = 41943040L),
-               parse_options = list(newlines_in_values = TRUE)) |> 
-  select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
-  write_csv_arrow("data/opinion-clusters-2024-03-11-filtered.csv")
+f <- function(x, pos) select(x, id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str)
+read_csv_chunked("data/opinion-clusters-2024-03-11.csv",
+                 DataFrameCallback$new(f),
+                 chunk_size = 1000) |> 
+  write_csv("data/opinion-clusters-2024-03-11-filtered.csv")
+
+# read_csv_arrow("data/opinions-2024-03-11.csv", 
+#                read_options = list(block_size = 41943040L),
+#                parse_options = list(newlines_in_values = TRUE)) |> 
+#   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
+#   write_csv_arrow("data/opinion-clusters-2024-03-11-filtered.csv")
 
 # courts <- fread("data/courts-2024-03-11.csv")[
 #   jurisdiction == "S" &
