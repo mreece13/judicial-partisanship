@@ -65,9 +65,12 @@ dockets <- fread("data/dockets-2024-03-11.csv",
   court_id %in% courts
 ]
 
-write_parquet("data/dockets.parquet")
+write_parquet(dockets, "data/dockets.parquet")
 
 message("Loading Clusters")
+
+# clusters <- read_parquet("data/clusters.parquet")
+# setDT(clusters)
 
 clusters <- fread("data/opinion-clusters-2024-03-11.csv",
   index = c("id", "docket_id"),
@@ -83,7 +86,7 @@ clusters <- fread("data/opinion-clusters-2024-03-11.csv",
   on = c(docket_id = "id"), nomatch = NULL
 ]
 
-write_parquet("data/opinion-clusters.parquet")
+write_parquet(clusters, "data/opinion-clusters.parquet")
 
 message("Loading Opinions")
 
@@ -91,21 +94,21 @@ files <- list.files(path = "data/", pattern = "opinions_*", full.names = TRUE)
 
 message(sprintf("Number of Opinion Files: %s", length(files)))
 
-# f <- function(p){
-#   fread(p,
-#         index = "cluster_id",
-#         showProgress = TRUE,
-#         select = c(
-#           "id", "date_modified", "type", "plain_text", "author_id",
-#           "cluster_id", "page_count", "author_str"
-#         )
-#   )[
-#     clusters,
-#     on = c(cluster_id = "id"), nomatch = NULL
-#   ]
-# }
-# 
-# dts <- lapply(files, f) |> rbindlist()
+f <- function(p){
+  fread(p,
+        index = "cluster_id",
+        # showProgress = TRUE,
+        select = c(
+          "id", "date_modified", "type", "plain_text", "author_id",
+          "cluster_id", "page_count", "author_str"
+        )
+  )[
+    clusters,
+    on = c(cluster_id = "id"), nomatch = NULL
+  ]
+}
+
+dts <- lapply(files, f) |> rbindlist()
 
 # opinions <- fread("data/opinions-2024-03-11.csv",
 #   index = "cluster_id",
@@ -119,6 +122,6 @@ message(sprintf("Number of Opinion Files: %s", length(files)))
 #   on = c(cluster_id = "id"), nomatch = NULL
 # ]
  
-# message("Writing Opinions")
-# 
-# write_parquet(dts, "data/merged.parquet")
+message("Writing Opinions")
+
+write_parquet(dts, "data/merged.parquet")
