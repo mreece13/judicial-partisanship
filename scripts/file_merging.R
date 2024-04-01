@@ -1,28 +1,81 @@
-rm(list=ls())
+rm(list = ls())
 gc()
 
 library(tidyverse)
 library(arrow)
+library(data.table)
 
-courts <- read_csv("data/courts-2024-03-11.csv") |> 
-  filter(jurisdiction == "S", in_use, has_opinion_scraper, str_detect(full_name, "Supreme")) |> 
-  select(id)
+# courts <- read_csv("data/courts-2024-03-11.csv") |>
+#   filter(jurisdiction == "S", in_use, has_opinion_scraper, str_detect(full_name, "Supreme")) |>
+#   select(id)
+# 
+# dockets <- open_csv_dataset("data/dockets-2024-03-11.csv") |>
+#   select(id, date_modified, case_name, docket_number, court_id, assigned_to_id, cause, jurisdiction_type) |>
+#   inner_join(courts, by = c("court_id" = "id")) |>
+#   rename(date_modified_docket = date_modified)
+# 
+# clusters <- open_csv_dataset("data/opinion-clusters-2024-03-11.csv",
+#   parse_options = csv_parse_options(newlines_in_values = TRUE)
+# ) |>
+#   select(
+#     id, judges, date_modified, case_name, attorneys, nature_of_suit, posture, syllabus,
+#     citation_count, precedential_status, docket_id, headnotes, history, other_dates, summary
+#   ) |>
+#   inner_join(dockets, by = c("docket_id" = "id")) |>
+#   rename(date_modified_clusters = date_modified)
+# 
+# open_csv_dataset("data/opinions-2024-03-11.csv",
+#   parse_options = csv_parse_options(newlines_in_values = TRUE)
+# ) |>
+#   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |>
+#   inner_join(clusters, by = c("cluster_id" = "id")) |>
+#   rename(date_modified_opinion = date_modified) |>
+#   write_dataset("data/merged/", format = "parquet")
 
-dockets <- open_csv_dataset("data/dockets-2024-03-11.csv") |> 
-  select(id, date_modified, case_name, docket_number, court_id, assigned_to_id, cause, jurisdiction_type) |> 
-  inner_join(courts, by = c("court_id" = "id")) |> 
-  rename(date_modified_docket = date_modified)
 
-clusters <- open_csv_dataset("data/opinion-clusters-2024-03-11.csv",
-                             parse_options = csv_parse_options(newlines_in_values = TRUE)) |> 
-  select(id, judges, date_modified, case_name, attorneys, nature_of_suit, posture, syllabus,
-         citation_count, precedential_status, docket_id, headnotes, history, other_dates, summary) |> 
-  inner_join(dockets, by = c("docket_id" = "id")) |> 
-  rename(date_modified_clusters = date_modified)
+courts <- fread("data/courts-2024-03-11.csv")[
+  jurisdiction == "S" &
+    in_use == "t" &
+    has_opinion_scraper == "t" &
+    str_detect(full_name, "Supreme"),
+  .(id)
+]
 
-open_csv_dataset("data/opinions-2024-03-11.csv",
-                 parse_options = csv_parse_options(newlines_in_values = TRUE)) |> 
-  select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
-  inner_join(clusters, by = c("cluster_id" = "id")) |> 
-  rename(date_modified_opinion = date_modified) |> 
-  write_dataset("data/merged/", format = "parquet")
+dockets <- fread("data/dockets-2024-03-11.csv",
+  nrows = 1e6,
+  index = "id,court_id",
+  select = c(
+    "id", "date_modified", "case_name", "docket_number",
+    "court_id", "assigned_to_id", "cause", "jurisdiction_type"
+  )
+)[
+  courts,
+  on = .(court_id = "id"), nomatch = NULL
+]
+
+clusters <- fread("data/opinion-clusters-2024-03-11.csv.bz2",
+  index = "id,docket_id",
+  select = c(
+    "id", "judges", "date_modified", "case_name", "attorneys",
+    "nature_of_suit", "posture", "syllabus", "citation_count",
+    "precedential_status", "docket_id", "headnotes", "history",
+    "other_dates", "summary"
+  )
+)[
+  dockets,
+  on = .(docket_id = "id"), nomatch = NULL
+]
+
+opinions <- fread("data/opinions-2024-03-11.csv",
+  index = "cluster_id",
+  select = c(
+    "id", "date_modified", "type", "plain_text", "author_id",
+    "cluster_id", "page_count", "author_str"
+  )
+)[
+  clusters,
+  on = .(cluster_id = "id"), nomatch = NULL
+]
+
+
+write_parquet(opinions, "data/merged.parquet")
