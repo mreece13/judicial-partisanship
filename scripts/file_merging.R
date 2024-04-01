@@ -33,16 +33,16 @@ library(arrow)
 #   write_dataset("data/merged/", format = "parquet")
 
 f <- function(x, pos) select(x, id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str)
-read_csv_chunked("data/opinion-clusters-2024-03-11.csv",
+read_csv_chunked("data/opinions-2024-03-11.csv",
                  DataFrameCallback$new(f),
                  chunk_size = 1000) |> 
-  write_csv("data/opinion-clusters-2024-03-11-filtered.csv")
+  write_csv("data/opinions-2024-03-11-filtered.csv")
 
 # read_csv_arrow("data/opinions-2024-03-11.csv", 
 #                read_options = list(block_size = 41943040L),
 #                parse_options = list(newlines_in_values = TRUE)) |> 
 #   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
-#   write_csv_arrow("data/opinion-clusters-2024-03-11-filtered.csv")
+#   write_csv_arrow("data/opinions-2024-03-11-filtered.csv")
 
 # courts <- fread("data/courts-2024-03-11.csv")[
 #   jurisdiction == "S" &
