@@ -33,6 +33,7 @@ library(data.table)
 #   write_dataset("data/merged/", format = "parquet")
 
 read_csv_arrow("data/opinions-2024-03-11.csv", 
+               read_options = CsvReadOptions$create(block_size = 4194304L),
                parse_options = CsvParseOptions$create(newlines_in_values = TRUE)) |> 
   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
   write_csv_arrow("data/opinion-clusters-2024-03-11-filtered.csv")
