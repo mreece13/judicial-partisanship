@@ -44,49 +44,49 @@ library(data.table)
 #   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
 #   write_csv_arrow("data/opinions-2024-03-11-filtered.csv")
 
-courts <- fread("data/courts-2024-03-11.csv")[
-  jurisdiction == "S" &
-    in_use == "t" &
-    has_opinion_scraper == "t" &
-    str_detect(full_name, "Supreme"),
-  id
-]
-
-message("Loading Dockets")
-
-dockets <- fread("data/dockets-2024-03-11.csv",
-  index = c("id", "court_id"),
-  showProgress = TRUE,
-  select = c(
-    "id", "case_name", "docket_number",
-    "court_id", "assigned_to_id", "cause", "jurisdiction_type"
-  )
-)[
-  court_id %in% courts
-]
-
-write_parquet(dockets, "data/dockets.parquet")
+# courts <- fread("data/courts-2024-03-11.csv")[
+#   jurisdiction == "S" &
+#     in_use == "t" &
+#     has_opinion_scraper == "t" &
+#     str_detect(full_name, "Supreme"),
+#   id
+# ]
+# 
+# message("Loading Dockets")
+# 
+# dockets <- fread("data/dockets-2024-03-11.csv",
+#   index = c("id", "court_id"),
+#   showProgress = TRUE,
+#   select = c(
+#     "id", "case_name", "docket_number",
+#     "court_id", "assigned_to_id", "cause", "jurisdiction_type"
+#   )
+# )[
+#   court_id %in% courts
+# ]
+# 
+# write_parquet(dockets, "data/dockets.parquet")
 
 message("Loading Clusters")
 
-# clusters <- read_parquet("data/clusters.parquet")
-# setDT(clusters)
+clusters <- read_parquet("data/clusters.parquet")
+setDT(clusters)
 
-clusters <- fread("data/opinion-clusters-2024-03-11.csv",
-  index = c("id", "docket_id"),
-  showProgress = TRUE,
-  select = c(
-    "id", "judges", "case_name", "attorneys",
-    "nature_of_suit", "posture", "syllabus", "citation_count",
-    "precedential_status", "docket_id", "headnotes", "history",
-    "other_dates", "summary"
-  )
-)[
-  dockets,
-  on = c(docket_id = "id"), nomatch = NULL
-]
-
-write_parquet(clusters, "data/opinion-clusters.parquet")
+# clusters <- fread("data/opinion-clusters-2024-03-11.csv",
+#   index = c("id", "docket_id"),
+#   showProgress = TRUE,
+#   select = c(
+#     "id", "judges", "case_name", "attorneys",
+#     "nature_of_suit", "posture", "syllabus", "citation_count",
+#     "precedential_status", "docket_id", "headnotes", "history",
+#     "other_dates", "summary"
+#   )
+# )[
+#   dockets,
+#   on = c(docket_id = "id"), nomatch = NULL
+# ]
+# 
+# write_parquet(clusters, "data/opinion-clusters.parquet")
 
 message("Loading Opinions")
 
