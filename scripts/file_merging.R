@@ -18,11 +18,9 @@ dockets <- open_csv_dataset("data/dockets-2024-03-11.csv",
                               assigned_to_id = int32(),
                               cause = string(),
                               jurisdiction_type = string()
-                              # referred_to_id = int32(),
-                              # appeal_from_id = string(),
-                              # originating_court_information_id = int32()
                             )) |> 
-  inner_join(courts, by = c("court_id" = "id"))
+  inner_join(courts, by = c("court_id" = "id")) |> 
+  rename(date_modified_docket = date_modified)
 
 clusters <- open_csv_dataset("data/opinion-clusters-2024-03-11.csv",
                              schema = schema(
@@ -42,7 +40,8 @@ clusters <- open_csv_dataset("data/opinion-clusters-2024-03-11.csv",
                                other_dates = string(),
                                summary = string()
                              )) |> 
-  inner_join(dockets, by = c("docket_id" = "id"))
+  inner_join(dockets, by = c("docket_id" = "id")) |> 
+  rename(date_modified_clusters = date_modified)
 
 
 open_csv_dataset("data/opinions-2024-03-11.csv",
@@ -57,4 +56,5 @@ open_csv_dataset("data/opinions-2024-03-11.csv",
                                author_str = string()
                               )) |> 
   inner_join(clusters, by = c("cluster_id" = "id")) |> 
-  write_dataset("")
+  rename(date_modified_opinion = date_modified) |> 
+  write_dataset("data/merged/", format = "parquet")
