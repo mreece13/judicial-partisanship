@@ -78,7 +78,7 @@ opinions <- fread(
   index = "cluster_id",
   showProgress = TRUE,
   fill = TRUE,
-  col.names = c("id", "type", "plain_text", "author_id", "cluster_id")
+  col.names = c("id", "date_modified", "type", "plain_text", "author_id", "cluster_id")
 )[
   clusters,
   on = c(cluster_id = "id"), nomatch = NULL
