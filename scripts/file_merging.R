@@ -49,7 +49,7 @@ library(data.table)
 
 message("Loading Clusters")
 
-clusters <- read_parquet("data/opinion-clusters.parquet")
+clusters <- read_parquet("data/opinion-clusters.parquet") |> mutate(id = as.character(id))
 setDT(clusters)
 
 # clusters <- fread("data/opinion-clusters-2024-03-11.csv",
@@ -65,8 +65,6 @@ setDT(clusters)
 #   dockets,
 #   on = c(docket_id = "id"), nomatch = NULL
 # ]
-
-# clusters[, id := as.integer(id)]
 
 # write_parquet(clusters, "data/opinion-clusters.parquet")
 
