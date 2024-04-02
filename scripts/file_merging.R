@@ -33,7 +33,7 @@ library(data.table)
 #   write_dataset("data/merged/", format = "parquet")
 
 # f <- function(x, pos) write_csv(x, str_c("data/opinion_chunk_", pos, ".csv"))
-# 
+#
 # read_csv_chunked("data/opinions-2024-03-11.csv",
 #                  SideEffectChunkCallback$new(f),
 #                  col_types = cols_only(
@@ -46,12 +46,6 @@ library(data.table)
 #                  ),
 #                  chunk_size = 1000000)
 
-# read_csv_arrow("data/opinions-2024-03-11.csv", 
-#                read_options = list(block_size = 41943040L),
-#                parse_options = list(newlines_in_values = TRUE)) |> 
-#   select(id, date_modified, type, plain_text, author_id, cluster_id, page_count, author_str) |> 
-#   write_csv_arrow("data/opinions-2024-03-11-filtered.csv")
-
 # courts <- fread("data/courts-2024-03-11.csv")[
 #   jurisdiction == "S" &
 #     in_use == "t" &
@@ -59,9 +53,9 @@ library(data.table)
 #     str_detect(full_name, "Supreme"),
 #   id
 # ]
-# 
+#
 # message("Loading Dockets")
-# 
+#
 # dockets <- fread("data/dockets-2024-03-11.csv",
 #   index = c("id", "court_id"),
 #   showProgress = TRUE,
@@ -72,7 +66,7 @@ library(data.table)
 # )[
 #   court_id %in% courts
 # ]
-# 
+#
 # write_parquet(dockets, "data/dockets.parquet")
 
 message("Loading Clusters")
@@ -93,18 +87,18 @@ setDT(clusters)
 #   dockets,
 #   on = c(docket_id = "id"), nomatch = NULL
 # ]
-# 
+#
 # write_parquet(clusters, "data/opinion-clusters.parquet")
 
 message("Loading Opinions")
 
 # files <- list.files(path = "data", pattern = stringr::fixed("opinions_"), full.names = TRUE)
-# 
+#
 # message(sprintf("Number of Opinion Files: %s", length(files)))
-# 
+#
 # f <- function(p){
 #   message(p)
-#   
+#
 #   fread(file = p,
 #         sep = ",",
 #         index = "cluster_id",
@@ -118,15 +112,18 @@ message("Loading Opinions")
 #     on = c(cluster_id = "id"), nomatch = NULL
 #   ]
 # }
-# 
+#
 
-files <- list.files("data", pattern = fixed("opinion_chunk"), full.names = TRUE)
+opinions <- fread(
+  cmd = "tail -n-1 -q data/opinion_chunk*.csv",
+  index = "cluster_id",
+  showProgress = TRUE,
+  col.names = c("id", "date_modified", "type", "plain_text", "author_id", "cluster_id")
+)[
+  clusters,
+  on = c(cluster_id = "id"), nomatch = NULL
+]
 
-dts <- lapply(files, fread) |> rbindlist()
-setindex(dts, cluster_id)
-
-opinions <- dts[clusters, on = c(cluster_id = "id"), nomatch = NULL]
- 
 message("Writing Opinions")
 
 write_parquet(opinions, "data/merged.parquet")
