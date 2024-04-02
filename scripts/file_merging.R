@@ -6,7 +6,7 @@ library(arrow)
 library(data.table)
 
 # f <- function(x, pos) write_csv(x, str_c("data/opinion_chunk_", pos, ".csv"))
-f <- function(x, pos) x
+# f <- function(x, pos) x
 
 # read_csv_chunked("data/opinions-2024-03-11.csv",
 #                  DataFrameCallback$new(f),
@@ -28,11 +28,11 @@ f <- function(x, pos) x
 #   id
 # ]
 
-message("Loading Dockets")
-
-dockets <- read_parquet("data/dockets.parquet")
-setDT(dockets)
-dockets[, id := as.integer(id)]
+# message("Loading Dockets")
+# 
+# dockets <- read_parquet("data/dockets.parquet")
+# setDT(dockets)
+# dockets[, id := as.integer(id)]
 
 # dockets <- fread("data/dockets-2024-03-11.csv",
 #   index = c("id", "court_id"),
@@ -49,32 +49,32 @@ dockets[, id := as.integer(id)]
 
 message("Loading Clusters")
 
-# clusters <- read_parquet("data/opinion-clusters.parquet")
-# setDT(clusters)
+clusters <- read_parquet("data/opinion-clusters.parquet")
+setDT(clusters)
 
-clusters <- fread("data/opinion-clusters-2024-03-11.csv",
-  index = c("id", "docket_id"),
-  showProgress = TRUE,
-  select = c(
-    "id", "judges", "case_name", "attorneys", "date_filed",
-    "nature_of_suit", "posture", "syllabus", "citation_count",
-    "precedential_status", "docket_id", "headnotes", "history",
-    "other_dates", "summary"
-  )
-)[
-  dockets,
-  on = c(docket_id = "id"), nomatch = NULL
-]
+# clusters <- fread("data/opinion-clusters-2024-03-11.csv",
+#   index = c("id", "docket_id"),
+#   showProgress = TRUE,
+#   select = c(
+#     "id", "judges", "case_name", "attorneys", "date_filed",
+#     "nature_of_suit", "posture", "syllabus", "citation_count",
+#     "precedential_status", "docket_id", "headnotes", "history",
+#     "other_dates", "summary"
+#   )
+# )[
+#   dockets,
+#   on = c(docket_id = "id"), nomatch = NULL
+# ]
 
 clusters[, id := as.integer(id)]
 
-write_parquet(clusters, "data/opinion-clusters.parquet")
+# write_parquet(clusters, "data/opinion-clusters.parquet")
 
 message("Loading Opinions")
 
 opinions <- fread(
-  path = "data/opinion_chunk_1.csv",
-  # cmd = "tail -n-1 -q data/opinion_chunk*.csv",
+  # path = "data/opinion_chunk_1.csv",
+  cmd = "tail -n-1 -q data/opinion_chunk*.csv",
   index = "cluster_id",
   showProgress = TRUE,
   fill = TRUE,
