@@ -119,15 +119,13 @@ message("Loading Opinions")
 #   ]
 # }
 # 
-# dts <- lapply(files, f) |> rbindlist()
 
-opinions <- fread("cat data/opinion_chunk*",
-  index = "cluster_id",
-  showProgress = TRUE
-)[
-  clusters,
-  on = c(cluster_id = "id"), nomatch = NULL
-]
+files <- list.files("data", pattern = fixed("opinion_chunk"), full.names = TRUE)
+
+dts <- lapply(files, fread) |> rbindlist()
+setindex(dts, cluster_id)
+
+opinions <- dts[clusters, on = c(cluster_id = "id"), nomatch = NULL]
  
 message("Writing Opinions")
 
