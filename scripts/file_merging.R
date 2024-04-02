@@ -73,7 +73,7 @@ clusters[, id := as.integer(id)]
 message("Loading Opinions")
 
 opinions <- fread(
-  path = "data/opinions.csv",
+  file = "data/opinions.csv",
   index = "cluster_id",
   showProgress = TRUE,
   fill = TRUE,
