@@ -32,7 +32,7 @@ message("Loading Dockets")
 
 dockets <- read_parquet("data/dockets.parquet")
 setDT(dockets)
-dockets[id := as.integer(id),]
+dockets[, id := as.integer(id)]
 
 # dockets <- fread("data/dockets-2024-03-11.csv",
 #   index = c("id", "court_id"),
@@ -66,7 +66,7 @@ clusters <- fread("data/opinion-clusters-2024-03-11.csv",
   on = c(docket_id = "id"), nomatch = NULL
 ]
 
-clusters[id := as.integer(id), ]
+clusters[, id := as.integer(id)]
 
 write_parquet(clusters, "data/opinion-clusters.parquet")
 
