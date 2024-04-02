@@ -66,7 +66,7 @@ setDT(clusters)
 #   on = c(docket_id = "id"), nomatch = NULL
 # ]
 
-clusters[, id := as.integer(id)]
+# clusters[, id := as.integer(id)]
 
 # write_parquet(clusters, "data/opinion-clusters.parquet")
 
@@ -77,6 +77,7 @@ opinions <- fread(
   index = "cluster_id",
   showProgress = TRUE,
   fill = TRUE,
+  colClasses = list(character = 1:6),
   col.names = c("id", "date_modified", "type", "plain_text", "author_id", "cluster_id")
 )[
   clusters,
