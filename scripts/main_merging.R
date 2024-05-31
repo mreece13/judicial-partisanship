@@ -66,10 +66,12 @@ windett_ideals <- read_tsv("data/windett et al/windett_et_al_judicial_scores.tab
   )
 )
 
-opinions <- open_dataset("~/Dropbox (MIT)/Research/judicial-partisanship/data/merged/") |>
-  filter(year(date_filed) > min(windett_ideals$year, na.rm = TRUE), judges != "") |>
+opinions <- open_dataset("data/merged/") |>
+  filter(judges != "") |>
   mutate(across(c(name_last, name_first, name_middle), ~ ifelse(is.na(.x), "", .x))) |>
-  mutate(author = str_c(name_last, ", ", name_first, " ", name_middle, sep = "")) |>
+  mutate(
+    author = str_c(name_last, ", ", name_first, " ", name_middle, sep = "")
+    ) |>
   select(
     id, new_id, court_id, case_name, date_filed, judges, author,
     gender, cites, plain_text, name_last, name_middle, name_first
@@ -116,9 +118,17 @@ opinions <- open_dataset("~/Dropbox (MIT)/Research/judicial-partisanship/data/me
       name_last == "" ~ str_extract(judges, "^([^,]*)(?:,|$)") |> str_remove(","),
       .default = name_last
     )
-  )
+  ) |> 
+  separate_longer_delim(cols = plain_text, delim = "\n") |> 
+  mutate(
+    plain_text = str_remove_all(plain_text, "<[^>]*>|https?://\\S+|www\\.\\S+|http?://\\S+|[[:punct:]]|\\d+"),
+    plain_text = str_replace_all(plain_text, " +", " "),
+    plain_text = str_to_lower(plain_text),
+    plain_text = str_squish(plain_text)
+  ) |> 
+  filter(plain_text != "", plain_text != " ", !is.na(plain_text))
 
-write_csv(opinions, "data/opinions.csv")
+write_csv(opinions, "data/opinions_cleaned.csv")
 
 dime <- fread("data/dime_raw/dime_recipients_1979_2022.csv",
   drop = c(
@@ -161,3 +171,59 @@ dime_names[
   matches,
   on = c("id_dime")
 ]
+
+#####
+
+elections = readxl::read_excel("data/kritzer results/ElectionDataset.xlsx") |> 
+  select(state, year, CourtType, electtype, TotalVoteCount, CandName0:Party24) |> 
+  mutate(
+    CandName1 = coalesce(CandName0, CandName1),
+    CandType1 = coalesce(CandType0, CandType1),
+    IncumType1 = coalesce(IncumType0, IncumType1),
+    YrAppointed1 = coalesce(YrAppointed0, YrAppointed1)
+  ) |> 
+  select(-CandName0, -CandType0, -IncumType0, -YrAppointed0)
+
+make_wide <- function(col){
+  elections |> 
+    select(starts_with(col)) |> 
+    pivot_longer(cols = starts_with(col), values_to = col) |> 
+    select(-name)
+}
+
+cols = c("CandName", "votes", "CandType", "IncumType", "YrAppointed", "Party")
+
+long = elections |> 
+  select(state:TotalVoteCount, starts_with("CandName")) |> 
+  pivot_longer(starts_with("CandName")) |> 
+  select(-name, -value) |> 
+  bind_cols(
+    map(cols, make_wide) |> list_cbind()
+  ) |> 
+  drop_na(CandName)
+
+
+d = read_csv("data/opinions_cleaned.csv")
+
+d |> 
+  select(plain_text) |> 
+  reframe(l = map_int(plain_text, str_length)) |> 
+  pull(l) |> 
+  summary(na.rm = TRUE)
+
+judges = read_csv("data/judges.csv")
+
+d2 = d |> 
+  inner_join(judges, join_by(state, name_last, name_first)) |> 
+  mutate(name_last = coalesce(new_last, name_last)) |> 
+  select(-new_last) |> 
+  mutate(party = replace_na(party, "-1"))
+
+d2 |> write_csv("data/opinions_semisupervised.csv")
+
+d = read_csv("data/opinions_semisupervised.csv")
+
+d |> 
+  mutate(party = ifelse(party == "-1", NA, "yes")) |> 
+  count(party) |> 
+  mutate(perc = n/sum(n))

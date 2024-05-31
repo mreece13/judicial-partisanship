@@ -103,7 +103,7 @@ opinions <- fread(
   judges != "" & !is.na(judges),
 ][
   ,
-  plain_text := str_remove_all(plain_text, "\\\\n|<[^>]+>") |> str_squish()
+  plain_text := str_remove_all(plain_text, "<[^>]+>") |> str_squish()
 ][
   ,
   id := as.integer(id)

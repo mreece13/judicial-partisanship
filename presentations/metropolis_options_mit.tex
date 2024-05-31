@@ -1,0 +1,37 @@
+\definecolor{medsl}{HTML}{750014}
+\definecolor{medsl3}{RGB}{161,104,113}
+\definecolor{medsl2}{RGB}{193,155,161}
+\definecolor{medsldark}{HTML}{750014}
+\titlegraphic{\hfill\includegraphics[width=0.45\linewidth]{mit_lockup_std-three-line_rgb_mit-red.png}}
+
+\setbeamercolor{palette primary}{bg=medsl,fg=white}
+\setbeamercolor{palette secondary}{bg=medsl2,fg=white}
+\setbeamercolor{palette tertiary}{bg=medsl3,fg=white}
+\setbeamercolor{palette quaternary}{bg=medsl3,fg=white}
+\setbeamercolor{structure}{fg=black}
+\setbeamercolor{section in toc}{fg=medsl}
+\setbeamercolor{title separator}{fg=medsl}
+\setbeamercolor{progress bar in section page}{fg=medsl}
+\setbeamercolor{section in head/foot}{fg=normal text.bg, bg=structure.fg}
+\setbeamercolor{normal text}{bg=white,fg=black}
+
+\makeatletter
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.5ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{author in head/foot}Mason Reece\hspace{0.5em}(MIT)  
+    \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}CVR Ideals
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.5ex,dp=1ex,center]{date in head/foot}%
+    \usebeamerfont{title in head/foot}\insertdate
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.1\paperwidth,ht=2.5ex,dp=1ex,center]{page number in head/foot}%
+    \usebeamerfont{title in head/foot}\textcolor{medsldark}{\textbf{\insertframenumber}}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\makeatother

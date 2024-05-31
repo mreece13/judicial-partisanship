@@ -1,0 +1,131 @@
+---
+title: "Judicial Ideology in Response to Electoral Systems"
+subtitle: "Quant IV"
+date: today
+date-format: long
+embed-resources: true
+bibliography: references.bib
+suppress-bibliography: false
+colorlinks: true
+link-citations: true
+author: "Mason Reece"
+institute: "MIT"
+cache: true
+echo: false
+format:
+  beamer:
+    theme: metropolis
+    include-in-header: metropolis_options_mit.tex
+---
+
+## Background
+
+Judges in the US are normatively expected to be neutral interpreters of the law
+
+. . .
+
+-   Yet, research consistently demonstrates ideology influences judge's decisions [e.g., @martin_dynamic_2002; @bailey_comparable_2007; @epstein_judicial_2007; @clark_locating_2010; @lauderdale_scaling_2014; @epstein_behavior_2012; @bonica_politics_2017]
+
+. . .
+
+**What influences a judge's ideology? Do features of the electoral system matter?**
+
+## Judicial Selection Systems
+
+![](images/appointments.png)
+
+## Theory
+
+Other policymakers are responsive to electoral system dynamics
+
+. . .
+
+-   Members of Congress modify their beliefs towards the median voter in competitive elections [@ansolabehere2001]
+
+. . .
+
+-   Presidents are responsive to public opinion when reelection is imminent or when the topic is particularly relevant [@canes-wrone2004]
+
+. . .
+
+I expect that, dependent on the type of electoral system in place, judges are responsive to the body selecting them and become more sensitive closer to the selection date
+
+## Estimating Judicial Ideology
+
+Considerable effort has been taken to estimate the "ideology" of judges [@bonica_estimating_2021], of which the most commonly used measure is the DIME score [@bonica2014]
+
+. . .
+
+DIME scores are based on campaign contributions which enables a common latent scale among political actors
+
+. . .
+
+-   This does not work as well for judges. In some states, judges do not run for election nor do they regularly contribute to other campaigns
+
+-   DIME instead imputes data for appointed judges who have not contributed, based on the score of the appointing governor or median member of the appointing legislative body [@bonica_common-space_2015]
+
+## Proposed Methodology
+
+The most common information available from judges are the decisions and written opinions they issue
+
+-   Using decisions was the original method for estimating judicial ideology [@brace2000; @martin_dynamic_2002; @epstein_judicial_2007]
+
+    -   Using opinions has empirically challenging, but recent computer science advances have made this more possible [@fagni2022]
+
+-   Decisions and opinions are also theoretically important
+
+## Data
+
+I gather judicial opinions from *CourtListener*
+
+-   The data includes opinions from all 50 states between 1996-2024
+
+-   I remove unanimous and unsigned decisions
+
+. . .
+
+-   From each text, I remove citations
+
+    -   I do not remove stopwords, stem, or otherwise preprocess
+
+. . .
+
+Represents 26,000 judicial opinions, with an average of 25,000 tokens per opinion. These are then split into sentences to pass to the model
+
+## Modeling Ideology with Text
+
+Multiple approaches
+
+-   Predict DIME scores for missing data
+
+    -   *Problem: Not missing at random*
+
+. . .
+
+-   Structural topic model
+
+    -   *Problem: Bag of words*
+
+. . .
+
+-   Citation networks [@clark_locating_2010; @schmid2022]
+
+    -   *Problem: Context of the citation is extremely relevant*
+
+. . .
+
+-   **BERTopic** [@grootendorst2022]
+
+    -   Semi-supervised topic modeling based on registered parties
+
+    -   Dynamic topic modeling over time
+
+## BERTopic
+
+![](images/BERTopic.svg){fig-align="center"}
+
+## Results
+
+Pending...
+
+## References {visibility="hidden"}
